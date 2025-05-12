@@ -110,7 +110,7 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 						<TextInput
 							style={[
 								styles.amountInput,
-								{ color: amount ? "#0057FF" : "#C7D0E1" },
+								{ color: amount ? "#035AC5" : "#C7D0E1" },
 							]}
 							value={amount}
 							onChangeText={setAmount}
@@ -123,7 +123,7 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 						<Text
 							style={[
 								styles.amountCurrency,
-								{ color: amount ? "#0057FF" : "#C7D0E1" },
+								{ color: amount ? "#035AC5" : "#C7D0E1" },
 							]}
 						>
 							{getCurrencySymbol(currency)}
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
 	},
 	label: {
 		fontWeight: "700",
-		color: "#1A2B49",
+		color: "#002859",
 		marginBottom: 8,
 		marginTop: 0,
 		fontSize: 15,
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
 		marginBottom: 24,
 	},
 	button: {
-		backgroundColor: "#0057FF",
+		backgroundColor: "#035AC5",
 		borderRadius: 8,
 		paddingVertical: 14,
 		alignItems: "center",
