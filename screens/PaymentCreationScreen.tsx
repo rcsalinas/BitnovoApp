@@ -3,6 +3,7 @@ import FiatsModal from "@/components/FiatsModal";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useLayoutEffect, useState } from "react";
 import {
+	ActivityIndicator,
 	Alert,
 	KeyboardAvoidingView,
 	Platform,
@@ -36,6 +37,7 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 	const [concept, setConcept] = useState("");
 	const [currency, setCurrency] = useState<string>("EUR");
 	const [modalVisible, setModalVisible] = useState(false);
+	const [loading, setLoading] = useState(false);
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
@@ -64,6 +66,8 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 			);
 			return;
 		}
+
+		setLoading(true);
 
 		const payload = new FormData();
 		payload.append("expected_output_amount", amount);
@@ -95,6 +99,8 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 			}
 		} catch (error) {
 			Alert.alert("Error", "Ha ocurrido un error al crear el pago.");
+		} finally {
+			setLoading(false); // NEW
 		}
 	};
 
@@ -154,22 +160,26 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 				<TouchableOpacity
 					style={[
 						styles.button,
-						!(amount && concept && currency) &&
+						(!(amount && concept && currency) || loading) &&
 							styles.buttonDisabled,
 					]}
 					onPress={createPayment}
-					disabled={!(amount && concept && currency)}
+					disabled={!(amount && concept && currency) || loading}
 					activeOpacity={0.8}
 				>
-					<Text
-						style={[
-							styles.buttonText,
-							!(amount && concept && currency) &&
-								styles.buttonTextDisabled,
-						]}
-					>
-						Continuar
-					</Text>
+					{loading ? (
+						<ActivityIndicator color="#035AC5" />
+					) : (
+						<Text
+							style={[
+								styles.buttonText,
+								(!(amount && concept && currency) || loading) &&
+									styles.buttonTextDisabled,
+							]}
+						>
+							Continuar
+						</Text>
+					)}
 				</TouchableOpacity>
 
 				{/* Hidden input for amount (to show numpad) */}
