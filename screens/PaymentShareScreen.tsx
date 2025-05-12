@@ -1,7 +1,8 @@
 import { StackScreenProps } from "@react-navigation/stack";
 
 import WhatsappShareInput from "@/components/WhatsappShareInput";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import { usePaymentWebSocket } from "@/hooks/usePaymentWebSocket";
+import React, { useLayoutEffect } from "react";
 import {
 	Clipboard,
 	Linking,
@@ -34,28 +35,13 @@ const getCurrencySymbol = (code: string | null) => {
 
 const PaymentShareScreen: React.FC<Props> = ({ navigation, route }) => {
 	const { paymentId, webUrl, amount, currency } = route.params;
-	const [paymentStatus, setPaymentStatus] = useState<string>("Pendiente");
 
-	useEffect(() => {
-		const newSocket = new WebSocket(
-			`wss://payments.pre-bnvo.com/ws/merchant/${paymentId}`
-		);
-
-		newSocket.onmessage = (event) => {
-			const data = JSON.parse(event.data);
-			if (data.status === "completed") {
-				setPaymentStatus("Completado");
-				navigation.navigate("PaymentCompleted", {
-					amount: data.amount,
-					currency: data.currency,
-				});
-			}
-		};
-
-		return () => {
-			newSocket.close();
-		};
-	}, [paymentId, navigation]);
+	usePaymentWebSocket({
+		paymentId,
+		onCompleted: ({ amount, currency }) => {
+			navigation.navigate("PaymentCompleted", { amount, currency });
+		},
+	});
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
@@ -134,6 +120,7 @@ const PaymentShareScreen: React.FC<Props> = ({ navigation, route }) => {
 							webUrl: webUrl,
 							identifier: paymentId,
 							currency: currency,
+							paymentId: paymentId,
 						})
 					}
 				>

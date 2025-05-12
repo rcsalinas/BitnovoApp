@@ -11,6 +11,7 @@ export type RootStackParamList = {
 		webUrl: string;
 		amount: string;
 		currency: string;
+		paymentId: string;
 	};
 	PaymentCompleted: { amount: string; currency: string };
 };

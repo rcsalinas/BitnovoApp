@@ -1,3 +1,4 @@
+import { usePaymentWebSocket } from "@/hooks/usePaymentWebSocket";
 import { StackScreenProps } from "@react-navigation/stack";
 import React, { useLayoutEffect } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -10,7 +11,14 @@ import { RootStackParamList } from "../types/navigation";
 type Props = StackScreenProps<RootStackParamList, "QRDisplay">;
 
 const QRDisplayScreen: React.FC<Props> = ({ navigation, route }) => {
-	const { webUrl, amount, currency } = route.params;
+	const { webUrl, amount, currency, paymentId } = route.params;
+
+	usePaymentWebSocket({
+		paymentId,
+		onCompleted: ({ amount, currency }) => {
+			navigation.navigate("PaymentCompleted", { amount, currency });
+		},
+	});
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
