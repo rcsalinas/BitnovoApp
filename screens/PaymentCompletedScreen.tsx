@@ -1,16 +1,9 @@
-import { StackNavigationProp } from "@react-navigation/stack";
+import { StackScreenProps } from "@react-navigation/stack";
 import React from "react";
 import { Button, StyleSheet, Text, View } from "react-native";
 import { RootStackParamList } from "../types/navigation";
 
-type PaymentCompletedScreenNavigationProp = StackNavigationProp<
-	RootStackParamList,
-	"PaymentCompleted"
->;
-type Props = {
-	navigation: PaymentCompletedScreenNavigationProp;
-	route: { params: { amount: string; currency: string } };
-};
+type Props = StackScreenProps<RootStackParamList, "PaymentCompleted">;
 
 const PaymentCompletedScreen: React.FC<Props> = ({ navigation, route }) => {
 	const { amount, currency } = route.params;

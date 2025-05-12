@@ -93,6 +93,8 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 				navigation.navigate("PaymentShare", {
 					paymentId: responseJson.identifier,
 					webUrl: responseJson.web_url,
+					amount: amount,
+					currency: currency,
 				});
 			} else {
 				Alert.alert("Error", responseJson.message);
