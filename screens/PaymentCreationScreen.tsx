@@ -1,11 +1,11 @@
-import { StackNavigationProp } from "@react-navigation/stack";
-
 import FiatDropdown from "@/components/FiatDropdown";
 import FiatsModal from "@/components/FiatsModal";
+import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useLayoutEffect, useState } from "react";
 import {
 	Alert,
-	Button,
+	KeyboardAvoidingView,
+	Platform,
 	StyleSheet,
 	Text,
 	TextInput,
@@ -21,20 +21,25 @@ type PaymentCreationScreenNavigationProp = StackNavigationProp<
 type Props = { navigation: PaymentCreationScreenNavigationProp };
 
 const FIAT_CURRENCIES = [
-	{ code: "EUR", name: "Euro" },
-	{ code: "USD", name: "US Dollar" },
-	{ code: "GBP", name: "British Pound" },
+	{ code: "EUR", name: "Euro", symbol: "€" },
+	{ code: "USD", name: "US Dollar", symbol: "$" },
+	{ code: "GBP", name: "British Pound", symbol: "£" },
 ];
+
+const getCurrencySymbol = (code: string | null) => {
+	const found = FIAT_CURRENCIES.find((c) => c.code === code);
+	return found ? found.symbol : "€";
+};
 
 const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 	const [amount, setAmount] = useState("");
 	const [concept, setConcept] = useState("");
-	const [currency, setCurrency] = useState<string | null>(null);
+	const [currency, setCurrency] = useState<string>("EUR");
 	const [modalVisible, setModalVisible] = useState(false);
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
-			headerTitle: "Crear pago",
+			headerTitle: "Importe a pagar",
 			headerTitleAlign: "center",
 			headerRight: () => (
 				<FiatDropdown
@@ -65,7 +70,6 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 		payload.append("fiat", currency);
 		payload.append("notes", concept);
 
-		// Call the API
 		try {
 			const response = await fetch(
 				"https://payments.pre-bnvo.com/api/v1/orders/",
@@ -82,7 +86,6 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 			const responseJson = await response.json();
 
 			if (response.ok) {
-				// Navigate to the Share screen with required data
 				navigation.navigate("PaymentShare", {
 					paymentId: responseJson.identifier,
 					webUrl: responseJson.web_url,
@@ -96,75 +99,169 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 	};
 
 	return (
-		<View style={styles.container}>
-			<Text style={styles.label}>Importe a pagar</Text>
-			<TextInput
-				style={styles.input}
-				keyboardType="decimal-pad"
-				placeholder="0.00"
-				value={amount}
-				onChangeText={setAmount}
-			/>
+		<KeyboardAvoidingView
+			style={{ flex: 1, backgroundColor: "#fff" }}
+			behavior={Platform.OS === "ios" ? "padding" : undefined}
+		>
+			<View style={styles.container}>
+				{/* Amount */}
+				<View style={styles.amountContainer}>
+					<View style={styles.amountInputWrapper}>
+						<TextInput
+							style={[
+								styles.amountInput,
+								{ color: amount ? "#0057FF" : "#C7D0E1" },
+							]}
+							value={amount}
+							onChangeText={setAmount}
+							keyboardType="decimal-pad"
+							placeholder="0.00"
+							placeholderTextColor="#C7D0E1"
+							textAlign="center"
+							autoFocus
+						/>
+						<Text
+							style={[
+								styles.amountCurrency,
+								{ color: amount ? "#0057FF" : "#C7D0E1" },
+							]}
+						>
+							{getCurrencySymbol(currency)}
+						</Text>
+					</View>
+				</View>
 
-			<Text style={styles.label}>Concepto</Text>
-			<TextInput
-				style={styles.input}
-				placeholder="Añade descripción del pago"
-				value={concept}
-				onChangeText={setConcept}
-			/>
+				{/* Concept */}
+				<Text style={styles.label}>Concepto</Text>
+				<TextInput
+					style={styles.input}
+					placeholder="Añade descripción del pago"
+					placeholderTextColor="#B0B8C1"
+					value={concept}
+					onChangeText={setConcept}
+				/>
 
-			<Text style={styles.label}>Divisa FIAT</Text>
-			<TouchableOpacity
-				style={styles.currencySelect}
-				onPress={() => setModalVisible(true)}
-			>
-				<Text>{currency ? currency : "Selecciona divisa"}</Text>
-			</TouchableOpacity>
+				{/* Modal for currency selection */}
+				<FiatsModal
+					visible={modalVisible}
+					onClose={() => setModalVisible(false)}
+					currencies={FIAT_CURRENCIES}
+					selectedCurrency={currency}
+					onSelect={handleCurrencySelect}
+				/>
 
-			<FiatsModal
-				visible={modalVisible}
-				onClose={() => setModalVisible(false)}
-				currencies={FIAT_CURRENCIES}
-				selectedCurrency={currency}
-				onSelect={handleCurrencySelect}
-			/>
+				{/* Continue Button */}
+				<TouchableOpacity
+					style={[
+						styles.button,
+						!(amount && concept && currency) &&
+							styles.buttonDisabled,
+					]}
+					onPress={createPayment}
+					disabled={!(amount && concept && currency)}
+					activeOpacity={0.8}
+				>
+					<Text
+						style={[
+							styles.buttonText,
+							!(amount && concept && currency) &&
+								styles.buttonTextDisabled,
+						]}
+					>
+						Continuar
+					</Text>
+				</TouchableOpacity>
 
-			<Button title="Continuar" onPress={createPayment} />
-		</View>
+				{/* Hidden input for amount (to show numpad) */}
+				<TextInput
+					style={{
+						height: 0,
+						width: 0,
+						opacity: 0,
+						position: "absolute",
+					}}
+					keyboardType="decimal-pad"
+					value={amount}
+					onChangeText={setAmount}
+					autoFocus={false}
+					editable={false}
+				/>
+			</View>
+		</KeyboardAvoidingView>
 	);
 };
 
 const styles = StyleSheet.create({
-	container: { flex: 1, padding: 20, backgroundColor: "#fff" },
-	label: { marginTop: 16, fontWeight: "bold" },
+	container: {
+		flex: 1,
+		padding: 24,
+		backgroundColor: "#fff",
+	},
+	amountContainer: {
+		alignItems: "center",
+		justifyContent: "center",
+		marginTop: 32,
+		marginBottom: 32,
+	},
+	amountText: {
+		fontSize: 48,
+		fontWeight: "700",
+		letterSpacing: 1,
+	},
+	label: {
+		fontWeight: "700",
+		color: "#1A2B49",
+		marginBottom: 8,
+		marginTop: 0,
+		fontSize: 15,
+	},
 	input: {
 		borderWidth: 1,
-		borderColor: "#ccc",
-		padding: 8,
-		borderRadius: 5,
-		marginTop: 4,
-	},
-	currencySelect: {
-		padding: 12,
-		borderWidth: 1,
-		borderColor: "#ccc",
-		borderRadius: 5,
-		marginTop: 4,
-	},
-	modalOverlay: {
-		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.3)",
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	modalContent: {
-		backgroundColor: "white",
+		borderColor: "#E3E6ED",
+		backgroundColor: "#fff",
+		padding: 14,
 		borderRadius: 8,
-		padding: 16,
-		width: 300,
+		fontSize: 16,
+		color: "#1A2B49",
+		marginBottom: 24,
 	},
-	currencyItem: { padding: 12, fontSize: 16 },
+	button: {
+		backgroundColor: "#0057FF",
+		borderRadius: 8,
+		paddingVertical: 14,
+		alignItems: "center",
+		marginTop: 16,
+	},
+	buttonDisabled: {
+		backgroundColor: "#E3EFFF",
+	},
+	buttonText: {
+		color: "#fff",
+		fontWeight: "700",
+		fontSize: 17,
+	},
+	buttonTextDisabled: {
+		color: "#8CA9D5",
+	},
+	amountInputWrapper: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	amountInput: {
+		fontSize: 48,
+		fontWeight: "700",
+		letterSpacing: 1,
+		borderWidth: 0,
+		padding: 0,
+		backgroundColor: "transparent",
+		width: 160,
+	},
+	amountCurrency: {
+		fontSize: 48,
+		fontWeight: "700",
+		marginLeft: 4,
+	},
 });
 
 export default PaymentCreationScreen;
