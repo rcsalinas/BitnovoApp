@@ -139,13 +139,36 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 
 				{/* Concept */}
 				<Text style={styles.label}>Concepto</Text>
-				<TextInput
-					style={styles.input}
-					placeholder="Añade descripción del pago"
-					placeholderTextColor="#B0B8C1"
-					value={concept}
-					onChangeText={setConcept}
-				/>
+				<View style={{ height: 160 }}>
+					<TextInput
+						style={[
+							styles.input,
+							{
+								minHeight: 48,
+								maxHeight: 120,
+								textAlignVertical: "top",
+							},
+						]}
+						placeholder="Añade descripción del pago"
+						placeholderTextColor="#B0B8C1"
+						value={concept}
+						onChangeText={setConcept}
+						multiline
+						maxLength={140}
+						editable={!loading}
+					/>
+					<Text
+						style={{
+							alignSelf: "flex-end",
+							color: "#647184",
+							fontSize: 13,
+							marginTop: 8,
+							marginRight: 4,
+						}}
+					>
+						{concept.length}/140 caracteres
+					</Text>
+				</View>
 
 				{/* Modal for currency selection */}
 				<FiatsModal
@@ -233,7 +256,6 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		fontSize: 16,
 		color: "#1A2B49",
-		marginBottom: 24,
 	},
 	button: {
 		backgroundColor: "#035AC5",
