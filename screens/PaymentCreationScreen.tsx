@@ -121,12 +121,29 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 								{ color: amount ? "#035AC5" : "#C7D0E1" },
 							]}
 							value={amount}
-							onChangeText={setAmount}
+							onChangeText={(text) => {
+								let sanitized = text.replace(/[^0-9.,]/g, "");
+								// Only allow one comma or dot
+								sanitized = sanitized.replace(
+									/([.,])(?=.*[.,])/g,
+									""
+								);
+								// Replace dot with comma for consistency
+								sanitized = sanitized.replace(".", ",");
+								// Limit to two decimals
+								const parts = sanitized.split(",");
+								if (parts.length === 2) {
+									parts[1] = parts[1].slice(0, 2);
+									sanitized = parts[0] + "," + parts[1];
+								}
+								setAmount(sanitized);
+							}}
 							keyboardType="decimal-pad"
 							placeholder="0.00"
 							placeholderTextColor="#C7D0E1"
 							textAlign="center"
 							autoFocus
+							inputMode="decimal"
 						/>
 						<Text
 							style={[
