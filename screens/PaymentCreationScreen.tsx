@@ -114,46 +114,48 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 			<View style={styles.container}>
 				{/* Amount */}
 				<View style={styles.amountContainer}>
-					<View style={styles.amountInputWrapper}>
-						<TextInput
-							style={[
-								styles.amountInput,
-								{ color: amount ? "#035AC5" : "#C7D0E1" },
-							]}
-							value={amount}
-							onChangeText={(text) => {
-								let sanitized = text.replace(/[^0-9.,]/g, "");
-								// Only allow one comma or dot
-								sanitized = sanitized.replace(
-									/([.,])(?=.*[.,])/g,
-									""
-								);
-								// Replace dot with comma for consistency
-								sanitized = sanitized.replace(".", ",");
-								// Limit to two decimals
-								const parts = sanitized.split(",");
-								if (parts.length === 2) {
-									parts[1] = parts[1].slice(0, 2);
-									sanitized = parts[0] + "," + parts[1];
-								}
-								setAmount(sanitized);
-							}}
-							keyboardType="decimal-pad"
-							placeholder="0.00"
-							placeholderTextColor="#C7D0E1"
-							textAlign="center"
-							autoFocus
-							inputMode="decimal"
-						/>
-						<Text
-							style={[
-								styles.amountCurrency,
-								{ color: amount ? "#035AC5" : "#C7D0E1" },
-							]}
-						>
-							{getCurrencySymbol(currency)}
-						</Text>
-					</View>
+					<TextInput
+						style={[
+							styles.amountInput,
+							{ color: amount ? "#035AC5" : "#C7D0E1" },
+						]}
+						value={amount}
+						onChangeText={(text) => {
+							let sanitized = text.replace(/[^0-9.,]/g, "");
+
+							sanitized = sanitized.replace(
+								/([.,])(?=.*[.,])/g,
+								""
+							);
+
+							sanitized = sanitized.replace(".", ",");
+							const parts = sanitized.split(",");
+
+							parts[0] = parts[0].slice(0, 10);
+
+							if (parts.length === 2) {
+								parts[1] = parts[1].slice(0, 2);
+								sanitized = parts[0] + "," + parts[1];
+							} else {
+								sanitized = parts[0];
+							}
+							setAmount(sanitized);
+						}}
+						keyboardType="decimal-pad"
+						placeholder="0.00"
+						placeholderTextColor="#C7D0E1"
+						textAlign="center"
+						autoFocus
+						inputMode="decimal"
+					/>
+					<Text
+						style={[
+							styles.amountCurrency,
+							{ color: amount ? "#035AC5" : "#C7D0E1" },
+						]}
+					>
+						{getCurrencySymbol(currency)}
+					</Text>
 				</View>
 
 				{/* Concept */}
@@ -254,6 +256,7 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		marginTop: 32,
 		marginBottom: 32,
+		flexDirection: "row",
 	},
 	amountText: {
 		fontSize: 48,
@@ -297,7 +300,8 @@ const styles = StyleSheet.create({
 	amountInputWrapper: {
 		flexDirection: "row",
 		alignItems: "center",
-		justifyContent: "center",
+		justifyContent: "flex-start",
+		flex: 1,
 	},
 	amountInput: {
 		fontSize: 48,
@@ -306,12 +310,10 @@ const styles = StyleSheet.create({
 		borderWidth: 0,
 		padding: 0,
 		backgroundColor: "transparent",
-		width: 160,
 	},
 	amountCurrency: {
 		fontSize: 48,
 		fontWeight: "700",
-		marginLeft: 4,
 	},
 });
 
