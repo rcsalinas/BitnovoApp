@@ -26,6 +26,11 @@ export function usePaymentWebSocket({
 					amount: data.fiat_amount,
 					currency: data.fiat,
 				});
+			} else if (data.status === "IA") {
+				// Payment is insufficient
+				alert(
+					"El importe es insuficiente. Por favor, paga el total requerido."
+				);
 			}
 		};
 
