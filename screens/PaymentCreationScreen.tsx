@@ -6,7 +6,6 @@ import {
 	ActivityIndicator,
 	Alert,
 	KeyboardAvoidingView,
-	Platform,
 	StyleSheet,
 	Text,
 	TextInput,
@@ -109,34 +108,53 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 	return (
 		<KeyboardAvoidingView
 			style={{ flex: 1, backgroundColor: "#fff" }}
-			behavior={Platform.OS === "ios" ? "padding" : undefined}
+			behavior="height"
 		>
 			<View style={styles.container}>
 				{/* Amount */}
 				<View style={styles.amountContainer}>
-					<View style={styles.amountInputWrapper}>
-						<TextInput
-							style={[
-								styles.amountInput,
-								{ color: amount ? "#035AC5" : "#C7D0E1" },
-							]}
-							value={amount}
-							onChangeText={setAmount}
-							keyboardType="decimal-pad"
-							placeholder="0.00"
-							placeholderTextColor="#C7D0E1"
-							textAlign="center"
-							autoFocus
-						/>
-						<Text
-							style={[
-								styles.amountCurrency,
-								{ color: amount ? "#035AC5" : "#C7D0E1" },
-							]}
-						>
-							{getCurrencySymbol(currency)}
-						</Text>
-					</View>
+					<TextInput
+						style={[
+							styles.amountInput,
+							{ color: amount ? "#035AC5" : "#C7D0E1" },
+						]}
+						value={amount}
+						onChangeText={(text) => {
+							let sanitized = text.replace(/[^0-9.,]/g, "");
+
+							sanitized = sanitized.replace(
+								/([.,])(?=.*[.,])/g,
+								""
+							);
+
+							sanitized = sanitized.replace(".", ",");
+							const parts = sanitized.split(",");
+
+							parts[0] = parts[0].slice(0, 10);
+
+							if (parts.length === 2) {
+								parts[1] = parts[1].slice(0, 2);
+								sanitized = parts[0] + "," + parts[1];
+							} else {
+								sanitized = parts[0];
+							}
+							setAmount(sanitized);
+						}}
+						keyboardType="decimal-pad"
+						placeholder="0.00"
+						placeholderTextColor="#C7D0E1"
+						textAlign="center"
+						autoFocus
+						inputMode="decimal"
+					/>
+					<Text
+						style={[
+							styles.amountCurrency,
+							{ color: amount ? "#035AC5" : "#C7D0E1" },
+						]}
+					>
+						{getCurrencySymbol(currency)}
+					</Text>
 				</View>
 
 				{/* Concept */}
@@ -180,55 +198,37 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 					selectedCurrency={currency}
 					onSelect={handleCurrencySelect}
 				/>
-
-				{/* Continue Button */}
-				<TouchableOpacity
-					style={[
-						styles.button,
-						(!(amount && concept && currency) || loading) &&
-							styles.buttonDisabled,
-					]}
-					onPress={createPayment}
-					disabled={!(amount && concept && currency) || loading}
-					activeOpacity={0.8}
-				>
-					{loading ? (
-						<ActivityIndicator color="#035AC5" />
-					) : (
-						<Text
-							style={[
-								styles.buttonText,
-								(!(amount && concept && currency) || loading) &&
-									styles.buttonTextDisabled,
-							]}
-						>
-							Continuar
-						</Text>
-					)}
-				</TouchableOpacity>
-
-				{/* Hidden input for amount (to show numpad) */}
-				<TextInput
-					style={{
-						height: 0,
-						width: 0,
-						opacity: 0,
-						position: "absolute",
-					}}
-					keyboardType="decimal-pad"
-					value={amount}
-					onChangeText={setAmount}
-					autoFocus={false}
-					editable={false}
-				/>
 			</View>
+			<TouchableOpacity
+				style={[
+					styles.button,
+					(!(amount && concept && currency) || loading) &&
+						styles.buttonDisabled,
+				]}
+				onPress={createPayment}
+				disabled={!(amount && concept && currency) || loading}
+				activeOpacity={0.8}
+			>
+				{loading ? (
+					<ActivityIndicator color="#035AC5" />
+				) : (
+					<Text
+						style={[
+							styles.buttonText,
+							(!(amount && concept && currency) || loading) &&
+								styles.buttonTextDisabled,
+						]}
+					>
+						Continuar
+					</Text>
+				)}
+			</TouchableOpacity>
 		</KeyboardAvoidingView>
 	);
 };
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1,
 		padding: 24,
 		backgroundColor: "#fff",
 	},
@@ -237,6 +237,7 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		marginTop: 32,
 		marginBottom: 32,
+		flexDirection: "row",
 	},
 	amountText: {
 		fontSize: 48,
@@ -265,6 +266,11 @@ const styles = StyleSheet.create({
 		paddingVertical: 14,
 		alignItems: "center",
 		marginTop: 16,
+		width: "90%",
+		alignSelf: "center",
+		position: "absolute",
+		top: "60%",
+		zIndex: 1,
 	},
 	buttonDisabled: {
 		backgroundColor: "#E3EFFF",
@@ -280,7 +286,8 @@ const styles = StyleSheet.create({
 	amountInputWrapper: {
 		flexDirection: "row",
 		alignItems: "center",
-		justifyContent: "center",
+		justifyContent: "flex-start",
+		flex: 1,
 	},
 	amountInput: {
 		fontSize: 48,
@@ -289,12 +296,10 @@ const styles = StyleSheet.create({
 		borderWidth: 0,
 		padding: 0,
 		backgroundColor: "transparent",
-		width: 160,
 	},
 	amountCurrency: {
 		fontSize: 48,
 		fontWeight: "700",
-		marginLeft: 4,
 	},
 });
 
