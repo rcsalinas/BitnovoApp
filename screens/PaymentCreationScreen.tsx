@@ -6,7 +6,6 @@ import {
 	ActivityIndicator,
 	Alert,
 	KeyboardAvoidingView,
-	Platform,
 	StyleSheet,
 	Text,
 	TextInput,
@@ -109,7 +108,7 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 	return (
 		<KeyboardAvoidingView
 			style={{ flex: 1, backgroundColor: "#fff" }}
-			behavior={Platform.OS === "ios" ? "padding" : undefined}
+			behavior="height"
 		>
 			<View style={styles.container}>
 				{/* Amount */}
@@ -199,55 +198,37 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 					selectedCurrency={currency}
 					onSelect={handleCurrencySelect}
 				/>
-
-				{/* Continue Button */}
-				<TouchableOpacity
-					style={[
-						styles.button,
-						(!(amount && concept && currency) || loading) &&
-							styles.buttonDisabled,
-					]}
-					onPress={createPayment}
-					disabled={!(amount && concept && currency) || loading}
-					activeOpacity={0.8}
-				>
-					{loading ? (
-						<ActivityIndicator color="#035AC5" />
-					) : (
-						<Text
-							style={[
-								styles.buttonText,
-								(!(amount && concept && currency) || loading) &&
-									styles.buttonTextDisabled,
-							]}
-						>
-							Continuar
-						</Text>
-					)}
-				</TouchableOpacity>
-
-				{/* Hidden input for amount (to show numpad) */}
-				<TextInput
-					style={{
-						height: 0,
-						width: 0,
-						opacity: 0,
-						position: "absolute",
-					}}
-					keyboardType="decimal-pad"
-					value={amount}
-					onChangeText={setAmount}
-					autoFocus={false}
-					editable={false}
-				/>
 			</View>
+			<TouchableOpacity
+				style={[
+					styles.button,
+					(!(amount && concept && currency) || loading) &&
+						styles.buttonDisabled,
+				]}
+				onPress={createPayment}
+				disabled={!(amount && concept && currency) || loading}
+				activeOpacity={0.8}
+			>
+				{loading ? (
+					<ActivityIndicator color="#035AC5" />
+				) : (
+					<Text
+						style={[
+							styles.buttonText,
+							(!(amount && concept && currency) || loading) &&
+								styles.buttonTextDisabled,
+						]}
+					>
+						Continuar
+					</Text>
+				)}
+			</TouchableOpacity>
 		</KeyboardAvoidingView>
 	);
 };
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1,
 		padding: 24,
 		backgroundColor: "#fff",
 	},
@@ -285,6 +266,11 @@ const styles = StyleSheet.create({
 		paddingVertical: 14,
 		alignItems: "center",
 		marginTop: 16,
+		width: "90%",
+		alignSelf: "center",
+		position: "absolute",
+		top: "60%",
+		zIndex: 1,
 	},
 	buttonDisabled: {
 		backgroundColor: "#E3EFFF",
