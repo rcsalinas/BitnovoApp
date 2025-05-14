@@ -86,6 +86,8 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 				}
 			);
 
+			console.log(response);
+
 			const responseJson = await response.json();
 
 			if (response.ok) {
@@ -99,9 +101,10 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 				Alert.alert("Error", responseJson.message);
 			}
 		} catch (error) {
+			console.log(error);
 			Alert.alert("Error", "Ha ocurrido un error al crear el pago.");
 		} finally {
-			setLoading(false); // NEW
+			setLoading(false);
 		}
 	};
 
@@ -134,7 +137,7 @@ const PaymentCreationScreen: React.FC<Props> = ({ navigation }) => {
 
 							if (parts.length === 2) {
 								parts[1] = parts[1].slice(0, 2);
-								sanitized = parts[0] + "," + parts[1];
+								sanitized = parts[0] + "." + parts[1];
 							} else {
 								sanitized = parts[0];
 							}
